@@ -36,8 +36,6 @@ export async function askAI(prevState: any, formData: FormData) {
     const { firestore } = initializeFirebase();
     const conversationsCollection = collection(firestore, 'conversations');
     
-    // Use the non-blocking function. This will not throw an error that stops the execution.
-    // Permission errors will be handled by the global error listener.
     addDocumentNonBlocking(conversationsCollection, {
       whatsappNumber: whatsappNumber,
       message: message,
@@ -51,13 +49,10 @@ export async function askAI(prevState: any, formData: FormData) {
     console.error('Error in askAI action:', error);
     let errorMessage = 'Hubo un error al procesar tu solicitud.';
 
-    // Check if it's a Twilio error and provide a more specific message
-    if (error.code) { // Twilio errors usually have a 'code' property
-      errorMessage = `Error de Twilio: ${error.message}. Por favor, verifica que el número de teléfono sea válido y esté en formato internacional (ej: +584121234567).`;
-    } else if (error.message.includes('permission-denied')) {
-        errorMessage = 'Error de base de datos: Permiso denegado. Contacta al administrador.'
+    // Twilio errors have a 'code' property. Check for it to provide a specific message.
+    if (error.code && error.message) {
+        errorMessage = `Error de Twilio: ${error.message}. Por favor, verifica que el número de teléfono sea válido y esté en formato internacional (ej: +584121234567).`;
     }
-
 
     return {
       sentTo: '',
