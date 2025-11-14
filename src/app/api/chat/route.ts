@@ -1,16 +1,21 @@
 import { chat } from "@/ai/flows/chat";
 import { NextRequest, NextResponse } from "next/server";
-import { twiml } from "twilio";
+import twilio from "twilio";
 import { firebaseConfig } from '@/firebase/config';
-import { initializeApp, getApps, getApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 
-// Initialize Firebase for server-side operations
-// This check ensures we don't re-initialize on every action
+// Inicializar Firebase para operaciones del lado del servidor
 if (!getApps().length) {
   initializeApp(firebaseConfig);
 }
 const firestore = getFirestore();
+
+// Inicializar el cliente de Twilio con las credenciales del entorno
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+const client = twilio(accountSid, authToken);
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,21 +30,19 @@ export async function POST(req: NextRequest) {
 
     const whatsappNumber = from.replace('whatsapp:', '');
 
-    // 1. Find the contact document to save the AI response
+    // 1. Encontrar el documento del contacto para guardar la respuesta de la IA
     const contactsCollection = collection(firestore, 'contacts');
-    const q = query(contactsCollection, where('whatsappNumber', '==', whatsappNumber));
+    const q = query(contactsCollection, where('whatsappNumber', '==', `+${whatsappNumber}`));
     const querySnapshot = await getDocs(q);
     
-    // The contact should have been created by the initial form submission.
-    // If not, we can't save the AI message, but we should still reply.
     if (querySnapshot.empty) {
        console.warn(`Webhook received message from unknown contact: ${whatsappNumber}. The initial form submission might have failed.`);
     }
 
-    // 2. Process the message with the AI agent to get a response
+    // 2. Procesar el mensaje con el agente de IA para obtener una respuesta
     const { response: aiResponse } = await chat({ message });
 
-    // 3. Save the AI's response to Firestore if the contact exists
+    // 3. Guardar la respuesta de la IA en Firestore si el contacto existe
     if (!querySnapshot.empty) {
       const contactDoc = querySnapshot.docs[0];
       const messagesCollection = collection(firestore, 'contacts', contactDoc.id, 'messages');
@@ -48,30 +51,24 @@ export async function POST(req: NextRequest) {
           sentAt: serverTimestamp(),
           from: 'ai'
       });
-      // Also update the last message timestamp on the contact
       await updateDoc(doc(firestore, 'contacts', contactDoc.id), { lastMessageAt: serverTimestamp() });
     }
 
-    // 4. Create the TwiML response to send the message back to the user
-    const messagingResponse = new twiml.MessagingResponse();
-    messagingResponse.message(aiResponse);
-
-    return new NextResponse(messagingResponse.toString(), {
-      headers: {
-        "Content-Type": "text/xml",
-      },
+    // 4. Enviar la respuesta de vuelta al usuario usando el cliente de Twilio
+    await client.messages.create({
+      body: aiResponse,
+      from: twilioPhoneNumber,
+      to: from,
     });
 
-  } catch (error) {
+    // 5. Devolver una respuesta vacía a Twilio para confirmar la recepción
+    // Usamos '204 No Content' para indicar que todo fue bien pero no hay nada que responder en TwiML
+    return new NextResponse(null, { status: 204 });
+
+  } catch (error: any) {
     console.error("Error processing Twilio webhook:", error);
-    const messagingResponse = new twiml.MessagingResponse();
-    messagingResponse.message("Lo siento, he encontrado un error al procesar tu solicitud. Por favor, inténtalo de nuevo.");
     
-    return new NextResponse(messagingResponse.toString(), {
-      status: 500,
-      headers: {
-        "Content-Type": "text/xml",
-      },
-    });
+    // En caso de error, es mejor devolver un error de servidor para que Twilio pueda reintentar si está configurado
+    return new NextResponse("Error processing request", { status: 500 });
   }
 }
