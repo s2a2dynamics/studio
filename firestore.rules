@@ -1,11 +1,16 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow public write for new conversations, but only authenticated users can read/update/delete.
-    // This allows the server action from the public page to save queries.
-    match /conversations/{conversationId} {
+    // Contacts can be created by anyone, but only viewed by authenticated admins.
+    match /contacts/{contactId} {
       allow create: if true;
-      allow read, update, delete: if request.auth != null; 
+      allow read, update, delete: if request.auth != null;
+
+      // Messages can be created by anyone (the server action), but only read by authenticated admins.
+      match /messages/{messageId} {
+        allow create: if true;
+        allow read, update, delete: if request.auth != null;
+      }
     }
   }
 }

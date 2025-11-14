@@ -1,29 +1,43 @@
 {
   "entities": {
-    "Conversation": {
-      "title": "Conversation",
-      "description": "Represents a query made by a user.",
+    "Contact": {
+      "title": "Contact",
+      "description": "Represents a unique contact identified by their WhatsApp number.",
       "type": "object",
       "properties": {
         "whatsappNumber": {
           "type": "string",
           "description": "The user's WhatsApp number."
         },
-        "message": {
-          "type": "string",
-          "description": "The message/query from the user."
-        },
-        "createdAt": {
+        "lastMessageAt": {
           "type": "string",
           "format": "date-time",
-          "description": "Timestamp of when the conversation was created."
+          "description": "Timestamp of the last message received from this contact."
         }
       },
-      "required": [
-        "whatsappNumber",
-        "message",
-        "createdAt"
-      ]
+      "required": ["whatsappNumber", "lastMessageAt"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Represents a single message within a conversation.",
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "The content of the message."
+        },
+        "sentAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the message was sent."
+        },
+        "from": {
+          "type": "string",
+          "enum": ["user", "ai"],
+          "description": "Indicates if the message was from the user or the AI assistant."
+        }
+      },
+      "required": ["message", "sentAt", "from"]
     }
   },
   "auth": {
@@ -32,11 +46,17 @@
     ]
   },
   "firestore": {
-    "/conversations/{conversationId}": {
+    "/contacts/{contactId}": {
       "schema": {
-        "$ref": "#/backend/entities/Conversation"
+        "$ref": "#/backend/entities/Contact"
       },
-      "description": "Stores user conversations/queries."
+      "description": "Stores unique contacts who have interacted with the assistant."
+    },
+    "/contacts/{contactId}/messages/{messageId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Message"
+      },
+      "description": "Stores all messages for a specific contact."
     }
   }
 }
