@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -15,14 +14,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { askAI } from './actions';
-import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} className="w-full">
-      {pending ? 'Enviando...' : 'Enviar y Recibir por WhatsApp'}
+      {pending ? 'Enviando...' : 'Enviar Consulta por WhatsApp'}
     </Button>
   );
 }
@@ -47,7 +45,7 @@ export default function Home() {
     if (state.response && !state.error) {
       toast({
         title: '¡Mensaje Enviado!',
-        description: `La respuesta ha sido enviada a ${state.sentTo}`,
+        description: `La consulta ha sido enviada a ${state.sentTo} y guardada correctamente.`,
       });
       formRef.current?.reset();
     }
@@ -59,9 +57,9 @@ export default function Home() {
         <CardHeader>
           <CardTitle className="text-2xl">Asistente Virtual FVG</CardTitle>
           <CardDescription>
-            Escribe tu consulta y recibe la respuesta directamente en tu
-            WhatsApp.
-          </CardDescription>
+            Escribe tu consulta y tu número de WhatsApp. Recibirás la respuesta
+            directamente en tu teléfono.
+          </cardDescription>
         </CardHeader>
         <CardContent>
           <form ref={formRef} action={formAction} className="space-y-4">
@@ -87,17 +85,6 @@ export default function Home() {
             <SubmitButton />
           </form>
         </CardContent>
-        {state.response && !state.error && (
-          <>
-            <Separator className="my-4" />
-            <CardFooter className="flex flex-col items-start gap-4">
-               <div>
-                <h3 className="font-semibold">Respuesta Enviada a {state.sentTo}:</h3>
-                <p className="text-sm text-gray-700">{state.response}</p>
-              </div>
-            </CardFooter>
-          </>
-        )}
       </Card>
     </main>
   );

@@ -1,68 +1,48 @@
 {
   "entities": {
-    "NotificationRequest": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "NotificationRequest",
+    "Conversation": {
+      "title": "Conversation",
+      "description": "Represents a query made by a user.",
       "type": "object",
-      "description": "Represents a request to send a WhatsApp notification via Twilio.",
       "properties": {
-        "id": {
+        "whatsappNumber": {
           "type": "string",
-          "description": "Unique identifier for the notification request."
-        },
-        "phoneNumber": {
-          "type": "string",
-          "description": "The recipient's phone number for the WhatsApp message."
+          "description": "The user's WhatsApp number."
         },
         "message": {
           "type": "string",
-          "description": "The message content to be sent."
-        },
-        "status": {
-          "type": "string",
-          "description": "The status of the notification request (e.g., pending, sent, failed).",
-          "format": "string"
+          "description": "The message/query from the user."
         },
         "createdAt": {
           "type": "string",
-          "description": "Timestamp indicating when the notification request was created.",
-          "format": "date-time"
+          "format": "date-time",
+          "description": "Timestamp of when the conversation was created."
         }
       },
       "required": [
-        "id",
-        "phoneNumber",
+        "whatsappNumber",
         "message",
-        "status",
         "createdAt"
       ]
     }
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "password"
     ]
   },
   "firestore": {
     "structure": [
       {
-        "path": "/notificationRequests/{notificationRequestId}",
+        "path": "/conversations/{conversationId}",
         "definition": {
-          "entityName": "NotificationRequest",
+          "entityName": "Conversation",
           "schema": {
-            "$ref": "#/backend/entities/NotificationRequest"
+            "$ref": "#/backend/entities/Conversation"
           },
-          "description": "Stores notification requests.  Includes all data necessary for processing the request (phoneNumber, message, status, createdAt).",
-          "params": [
-            {
-              "name": "notificationRequestId",
-              "description": "Unique identifier for the notification request."
-            }
-          ]
+          "description": "Stores user conversations/queries."
         }
       }
-    ],
-    "reasoning": "Given the requirement for a 'Mini-App de Notificación' to validate Firebase and Twilio integration with minimal cost, and the need for secure secret management, the proposed Firestore structure focuses on simplicity and security. Since the application is triggered by a public HTTP request, and the core function is to send a WhatsApp message, we will store the notification requests in a top-level collection. No user-specific data or collaborative access is needed, simplifying the security rules.  Authorization independence is achieved because all necessary data to process the notification request is contained within the `NotificationRequest` document itself; no `get()` calls on parent documents are required. The `list` operation is inherently limited because the cloud function will handle all operations; no direct listing of notification requests from the client is supported, thus fulfilling the QAPs requirement implicitly."
+    ]
   }
 }

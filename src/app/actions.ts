@@ -1,6 +1,8 @@
 'use server';
 
 import { chat } from '@/ai/flows/chat';
+import { initializeFirebase } from '@/firebase';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { Twilio } from 'twilio';
 
 export async function askAI(prevState: any, formData: FormData) {
@@ -17,10 +19,10 @@ export async function askAI(prevState: any, formData: FormData) {
   }
 
   try {
-    // 1. Obtener la respuesta de la IA
+    // 1. Get AI response
     const { response } = await chat({ message });
 
-    // 2. Enviar la respuesta a través de Twilio
+    // 2. Send response via Twilio
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
 
@@ -40,6 +42,16 @@ export async function askAI(prevState: any, formData: FormData) {
       from: `whatsapp:${twilioPhoneNumber}`,
       to: `whatsapp:${whatsappNumber}`,
     });
+    
+    // 3. Save conversation to Firestore
+    const { firestore } = initializeFirebase();
+    const conversationsCollection = collection(firestore, 'conversations');
+    await addDoc(conversationsCollection, {
+      whatsappNumber: whatsappNumber,
+      message: message,
+      createdAt: serverTimestamp(),
+    });
+
 
     return { response, sentTo: whatsappNumber, error: null };
   } catch (error: any) {
