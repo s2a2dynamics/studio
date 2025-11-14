@@ -1,35 +1,22 @@
 'use server';
 
-import { twiml } from 'twilio';
+import { chat } from '@/ai/flows/chat';
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
-
-const client = require('twilio')(accountSid, authToken);
-
-export async function sendMessage(prevState: any, formData: FormData) {
-  const phoneNumber = formData.get('phoneNumber') as string;
+export async function askAI(prevState: any, formData: FormData) {
   const message = formData.get('message') as string;
 
-  if (!phoneNumber || !message) {
-    return { success: false, message: 'El número de teléfono y el mensaje son obligatorios.' };
+  if (!message) {
+    return { response: '', error: 'El mensaje no puede estar vacío.' };
   }
 
-  // Agrega el prefijo de WhatsApp si no está presente
-  const toPhoneNumber = `whatsapp:${phoneNumber.startsWith('+') ? '' : '+'}${phoneNumber.replace(/\s+/g, '')}`;
-  const fromPhoneNumber = `whatsapp:${twilioPhoneNumber}`;
-
-
   try {
-    await client.messages.create({
-      body: message,
-      from: fromPhoneNumber,
-      to: toPhoneNumber,
-    });
-    return { success: true, message: '¡Mensaje enviado! Revisa tu WhatsApp.' };
+    const { response } = await chat({ message });
+    return { response, error: null };
   } catch (error: any) {
-    console.error('Error sending message via Twilio:', error);
-    return { success: false, message: `Error al enviar el mensaje: ${error.message}` };
+    console.error('Error calling AI flow:', error);
+    return {
+      response: '',
+      error: 'Error al comunicarse con el asistente de IA.',
+    };
   }
 }

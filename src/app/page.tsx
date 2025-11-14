@@ -7,20 +7,21 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { sendMessage } from './actions';
+import { askAI } from './actions';
+import { Separator } from '@/components/ui/separator';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} className="w-full">
-      {pending ? 'Enviando...' : 'Iniciar Conversación'}
+      {pending ? 'Enviando...' : 'Enviar Mensaje'}
     </Button>
   );
 }
@@ -28,26 +29,18 @@ function SubmitButton() {
 export default function Home() {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
-  const [state, formAction, isPending] = useActionState(sendMessage, {
-    success: false,
-    message: '',
+  const [state, formAction, isPending] = useActionState(askAI, {
+    response: '',
+    error: null,
   });
 
   useEffect(() => {
-    if (state.message) {
-      if (state.success) {
-        toast({
-          title: 'Éxito',
-          description: state.message,
-        });
-        formRef.current?.reset();
-      } else {
-        toast({
-          title: 'Error',
-          description: state.message,
-          variant: 'destructive',
-        });
-      }
+    if (state.error) {
+      toast({
+        title: 'Error',
+        description: state.error,
+        variant: 'destructive',
+      });
     }
   }, [state, toast]);
 
@@ -55,30 +48,20 @@ export default function Home() {
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-gray-100 p-4">
       <Card className="w-full max-w-lg shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl">Asistente Virtual de WhatsApp</CardTitle>
+          <CardTitle className="text-2xl">Asistente Virtual</CardTitle>
           <CardDescription>
-            Ingresa tu número de WhatsApp y tu consulta para iniciar una
-            conversación.
+            Escribe tu consulta para iniciar una conversación con nuestro
+            asistente de IA.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form ref={formRef} action={formAction} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="phoneNumber">Tu número de WhatsApp</Label>
-              <Input
-                id="phoneNumber"
-                name="phoneNumber"
-                placeholder="+14155238886"
-                required
-                type="tel"
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="message">Tu Mensaje</Label>
               <Textarea
                 id="message"
                 name="message"
-                placeholder="Escribe aquí tu pregunta inicial..."
+                placeholder="Escribe aquí tu pregunta..."
                 required
                 className="min-h-[100px]"
               />
@@ -86,6 +69,15 @@ export default function Home() {
             <SubmitButton />
           </form>
         </CardContent>
+        {state.response && (
+          <>
+            <Separator className="my-4" />
+            <CardFooter className="flex flex-col items-start gap-2">
+              <h3 className="font-semibold">Respuesta de la IA:</h3>
+              <p className="text-sm text-gray-700">{state.response}</p>
+            </CardFooter>
+          </>
+        )}
       </Card>
     </main>
   );
