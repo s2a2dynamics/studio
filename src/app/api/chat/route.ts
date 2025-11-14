@@ -32,8 +32,8 @@ export async function POST(req: NextRequest) {
 
     // 1. Encontrar el documento del contacto para guardar la respuesta de la IA
     const contactsCollection = collection(firestore, 'contacts');
-    // The number from Twilio doesn't include a '+', but our form does. Let's try both.
-    const q = query(contactsCollection, where('whatsappNumber', 'in', [whatsappNumber, `+${whatsappNumber}`]));
+    // The number from Twilio includes a '+'. We search for that exact number.
+    const q = query(contactsCollection, where('whatsappNumber', '==', whatsappNumber));
     const querySnapshot = await getDocs(q);
     
     if (querySnapshot.empty) {
