@@ -7,7 +7,6 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 
-const client = twilio(accountSid, authToken);
 
 export async function POST(req: NextRequest) {
   if (!accountSid || !authToken || !twilioPhoneNumber) {
@@ -19,6 +18,8 @@ export async function POST(req: NextRequest) {
         headers: { 'Content-Type': 'text/xml' } 
     });
   }
+
+  const client = twilio(accountSid, authToken);
 
   try {
     const body = await req.text();

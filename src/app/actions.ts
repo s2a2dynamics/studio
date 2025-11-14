@@ -1,5 +1,7 @@
 'use server';
 
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase';
 import twilio from 'twilio';
 
 // Estas variables se leen desde el archivo .env
@@ -26,8 +28,18 @@ export async function askAI(prevState: any, formData: FormData) {
   }
 
   try {
-    // La única responsabilidad de esta acción es enviar el mensaje a Twilio
-    // para iniciar la conversación a través del webhook.
+    // Inicializa Firebase en el servidor de forma robusta
+    const { firestore } = initializeFirebase();
+    
+    // Guarda el mensaje inicial del usuario en la base de datos
+    await addDoc(collection(firestore, 'contacts'), {
+      whatsappNumber: fromNumber,
+      message: message,
+      lastMessageAt: serverTimestamp(),
+      from: 'user',
+    });
+
+    // Envía el mensaje a Twilio para iniciar la conversación
     const client = twilio(accountSid, authToken);
     await client.messages.create({
       body: message,
@@ -40,13 +52,15 @@ export async function askAI(prevState: any, formData: FormData) {
     return { sentTo: fromNumber, error: null };
 
   } catch (error: any) {
-    console.error('Error en la acción askAI al enviar a Twilio:', error);
+    console.error('Error en la acción askAI:', error);
     let detailedError = `Hubo un error al procesar tu solicitud.`;
 
     if (error.code === 21211) { // Código de error de Twilio para un número inválido
         detailedError = "El número de WhatsApp proporcionado no es válido. Por favor, verifica e intenta de nuevo.";
+    } else if (error.message && error.message.includes('firestore')) {
+        detailedError = `Hubo un error al guardar tu consulta en la base de datos. Por favor, revisa la configuración.`;
     } else {
-        detailedError = `Ocurrió un error inesperado al contactar con Twilio: ${error.message}`;
+        detailedError = `Ocurrió un error inesperado: ${error.message}`;
     }
 
     return {
