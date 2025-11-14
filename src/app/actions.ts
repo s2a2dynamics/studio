@@ -1,9 +1,17 @@
 'use server';
 
 import { chat } from '@/ai/flows/chat';
-import { initializeFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { firebaseConfig } from '@/firebase/config';
+import { initializeApp, getApps } from 'firebase/app';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Twilio } from 'twilio';
+
+// Initialize Firebase Admin SDK for server-side operations
+if (!getApps().length) {
+  initializeApp(firebaseConfig);
+}
+
+const firestore = getFirestore();
 
 export async function askAI(prevState: any, formData: FormData) {
   const message = formData.get('message') as string;
@@ -31,25 +39,21 @@ export async function askAI(prevState: any, formData: FormData) {
       from: `whatsapp:${twilioPhoneNumber}`,
       to: `whatsapp:${whatsappNumber}`,
     });
-
-    // 3. Save conversation to Firestore without blocking
-    const { firestore } = initializeFirebase();
-    const conversationsCollection = collection(firestore, 'conversations');
     
-    addDocumentNonBlocking(conversationsCollection, {
-      whatsappNumber: whatsappNumber,
-      message: message,
-      createdAt: serverTimestamp(),
+    // 3. Save conversation to Firestore
+    const conversationsCollection = collection(firestore, 'conversations');
+    await addDoc(conversationsCollection, {
+        whatsappNumber: whatsappNumber,
+        message: message,
+        createdAt: serverTimestamp(),
     });
 
-    // Since the operation is non-blocking, we return success immediately.
     return { sentTo: whatsappNumber, error: null };
 
   } catch (error: any) {
     console.error('Error in askAI action:', error);
     let errorMessage = 'Hubo un error al procesar tu solicitud.';
 
-    // Twilio errors have a 'code' property. Check for it to provide a specific message.
     if (error.code && error.message) {
         errorMessage = `Error de Twilio: ${error.message}. Por favor, verifica que el número de teléfono sea válido y esté en formato internacional (ej: +584121234567).`;
     }
