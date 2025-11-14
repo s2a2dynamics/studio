@@ -1,8 +1,6 @@
 import { chat } from "@/ai/flows/chat";
 import { NextRequest, NextResponse } from "next/server";
 import twilio from "twilio";
-import { addDoc, collection, getDocs, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
-import { getAdminFirestore } from '@/lib/firebase-admin';
 
 // Initialize the Twilio client with credentials from the environment
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -15,7 +13,7 @@ export async function POST(req: NextRequest) {
   if (!accountSid || !authToken || !twilioPhoneNumber) {
     console.error("Twilio credentials are not configured in environment variables.");
     const twiml = new twilio.twiml.MessagingResponse();
-    twiml.message(`Lo siento, el servicio de mensajería no está configurado correctamente (missing credentials).`);
+    twiml.message(`Lo siento, el servicio de mensajería no está configurado correctamente.`);
     return new NextResponse(twiml.toString(), { 
         status: 500, 
         headers: { 'Content-Type': 'text/xml' } 
@@ -35,40 +33,14 @@ export async function POST(req: NextRequest) {
     // 1. Process the message with the AI agent to get a response
     const { response: aiResponse } = await chat({ message });
 
-    // 2. Save the AI's response to the database
-    try {
-        const firestore = getAdminFirestore();
-        const whatsappNumberOnly = from.replace('whatsapp:', '');
-        const contactsCollection = collection(firestore, 'contacts');
-        const q = query(contactsCollection, where('whatsappNumber', '==', whatsappNumberOnly));
-        const querySnapshot = await getDocs(q);
-
-        if (!querySnapshot.empty) {
-            const contactDoc = querySnapshot.docs[0];
-            const messagesCollection = collection(firestore, 'contacts', contactDoc.id, 'messages');
-            await addDoc(messagesCollection, {
-                message: aiResponse,
-                sentAt: serverTimestamp(),
-                from: 'ai'
-            });
-            await updateDoc(contactDoc.ref, { lastMessageAt: serverTimestamp() });
-        } else {
-            console.warn(`Contact not found for WhatsApp number: ${from}. AI response not saved.`);
-        }
-    } catch(dbError: any) {
-        console.error("Error saving AI response to Firestore:", dbError.message);
-        // We will still attempt to send the message to the user
-    }
-
-
-    // 3. Send the response back to the user using the Twilio client
+    // 2. Send the response back to the user using the Twilio client
     await client.messages.create({
       body: aiResponse,
       from: twilioPhoneNumber,
       to: from,
     });
 
-    // 4. Return an empty response to Twilio to acknowledge receipt
+    // 3. Return an empty response to Twilio to acknowledge receipt
     const twiml = new twilio.twiml.MessagingResponse();
     return new NextResponse(twiml.toString(), { 
         status: 200, 

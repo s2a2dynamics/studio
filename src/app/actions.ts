@@ -1,6 +1,6 @@
 'use server';
 
-import { collection, getDocs, query, serverTimestamp, setDoc, updateDoc, where, doc } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 
 export async function askAI(prevState: any, formData: FormData) {
@@ -16,34 +16,13 @@ export async function askAI(prevState: any, formData: FormData) {
 
   try {
     const firestore = getAdminFirestore();
-    // 1. Find or create the contact
     const contactsCollection = collection(firestore, 'contacts');
-    const q = query(contactsCollection, where('whatsappNumber', '==', whatsappNumber));
-    const querySnapshot = await getDocs(q);
-
-    let contactId: string;
-
-    if (querySnapshot.empty) {
-      // Create new contact document if it doesn't exist
-      const newContactRef = doc(contactsCollection);
-      await setDoc(newContactRef, { 
+    
+    // Create a new document for each submission, simplifying the logic.
+    await addDoc(contactsCollection, {
         whatsappNumber: whatsappNumber,
-        lastMessageAt: serverTimestamp(),
-      });
-      contactId = newContactRef.id;
-    } else {
-      // Contact already exists, get its ID
-      const contactDoc = querySnapshot.docs[0];
-      contactId = contactDoc.id;
-      // Update lastMessageAt timestamp for existing contact
-      await updateDoc(doc(firestore, 'contacts', contactId), { lastMessageAt: serverTimestamp() });
-    }
-
-    // 2. Add the user's message to the messages subcollection
-    const messagesCollection = collection(firestore, 'contacts', contactId, 'messages');
-    await addDoc(messagesCollection, {
         message: message,
-        sentAt: serverTimestamp(),
+        lastMessageAt: serverTimestamp(),
         from: 'user'
     });
     
