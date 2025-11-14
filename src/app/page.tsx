@@ -63,14 +63,6 @@ export default function Home() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Alert className="mb-4">
-            <Info className="h-4 w-4" />
-            <AlertTitle>¡Importante!</AlertTitle>
-            <AlertDescription>
-              Para que esto funcione, debes configurar el webhook de tu número de Twilio para que apunte a 
-              la URL de la API de tu aplicación desplegada: <strong>/api/chat</strong>
-            </AlertDescription>
-          </Alert>
           <form ref={formRef} action={formAction} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="whatsappNumber">Tu Número de WhatsApp</Label>
