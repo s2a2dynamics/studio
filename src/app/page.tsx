@@ -1,4 +1,4 @@
-import { MessageSquare, Zap, KeyRound } from "lucide-react";
+import { MessageSquareText, Zap, KeyRound } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -7,7 +7,8 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { NotifierForm } from "@/components/notifier-form";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -34,17 +35,17 @@ export default function Home() {
                   <path d="M21 7.5h-6" />
                 </svg>
             </div>
-            <CardTitle className="text-3xl font-headline">Twilio Firebase Notifier</CardTitle>
+            <CardTitle className="text-3xl font-headline">Twilio Chat Agent</CardTitle>
             <CardDescription className="text-base sm:text-lg">
-              A demonstration of integrating Twilio with Firebase for sending WhatsApp notifications.
+              A demonstration of integrating Twilio with Firebase for a WhatsApp chat agent.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 px-4 sm:px-8">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <FeatureCard
                 icon={<Zap className="h-6 w-6" />}
-                title="HTTP Trigger"
-                description="A public endpoint initiates the function."
+                title="Webhook Trigger"
+                description="A public endpoint to receive incoming messages."
               />
               <FeatureCard
                 icon={<KeyRound className="h-6 w-6" />}
@@ -52,16 +53,24 @@ export default function Home() {
                 description="Twilio credentials managed via environment variables."
               />
               <FeatureCard
-                icon={<MessageSquare className="h-6 w-6" />}
-                title="API Call"
-                description="Sends a WhatsApp message using the Twilio API."
+                icon={<MessageSquareText className="h-6 w-6" />}
+                title="AI-Powered Replies"
+                description="Uses Genkit to generate conversational responses."
               />
             </div>
+            <div className="rounded-md border bg-muted/50 p-4 text-center">
+              <h3 className="font-semibold">Test the Chatbot</h3>
+              <p className="text-sm text-muted-foreground">
+                To test the chatbot, you need to configure the webhook in your Twilio Sandbox settings to point to this application's API endpoint.
+              </p>
+            </div>
           </CardContent>
-          <CardFooter className="flex-col gap-4 px-4 pt-6 sm:px-8">
-            <NotifierForm />
+           <CardFooter className="flex-col gap-4 px-4 pt-6 sm:px-8">
+            <Button asChild size="lg">
+              <Link href="https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn" target="_blank">Configure Twilio Webhook</Link>
+            </Button>
             <p className="text-xs text-muted-foreground">
-              Click the button to simulate a serverless function call to Twilio.
+              Click the button to go to your Twilio console.
             </p>
           </CardFooter>
         </Card>
