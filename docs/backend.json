@@ -32,17 +32,11 @@
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/conversations/{conversationId}",
-        "definition": {
-          "entityName": "Conversation",
-          "schema": {
-            "$ref": "#/backend/entities/Conversation"
-          },
-          "description": "Stores user conversations/queries."
-        }
-      }
-    ]
+    "/conversations/{conversationId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Conversation"
+      },
+      "description": "Stores user conversations/queries."
+    }
   }
 }
