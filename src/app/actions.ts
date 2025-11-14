@@ -1,8 +1,8 @@
 'use server';
 
 import { chat } from '@/ai/flows/chat';
-import { initializeFirebase } from '@/firebase';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { initializeFirebase, addDocumentNonBlocking } from '@/firebase';
+import { collection, serverTimestamp } from 'firebase/firestore';
 import { Twilio } from 'twilio';
 
 export async function askAI(prevState: any, formData: FormData) {
@@ -12,7 +12,6 @@ export async function askAI(prevState: any, formData: FormData) {
 
   if (!message || !whatsappNumber) {
     return {
-      response: '',
       sentTo: '',
       error: 'El número de WhatsApp y el mensaje no pueden estar vacíos.',
     };
@@ -32,29 +31,35 @@ export async function askAI(prevState: any, formData: FormData) {
       from: `whatsapp:${twilioPhoneNumber}`,
       to: `whatsapp:${whatsappNumber}`,
     });
-    
-    // 3. Save conversation to Firestore
+
+    // 3. Save conversation to Firestore without blocking
     const { firestore } = initializeFirebase();
     const conversationsCollection = collection(firestore, 'conversations');
-    await addDoc(conversationsCollection, {
+    
+    // Use the non-blocking function. This will not throw an error that stops the execution.
+    // Permission errors will be handled by the global error listener.
+    addDocumentNonBlocking(conversationsCollection, {
       whatsappNumber: whatsappNumber,
       message: message,
       createdAt: serverTimestamp(),
     });
 
+    // Since the operation is non-blocking, we return success immediately.
+    return { sentTo: whatsappNumber, error: null };
 
-    return { response, sentTo: whatsappNumber, error: null };
   } catch (error: any) {
     console.error('Error in askAI action:', error);
     let errorMessage = 'Hubo un error al procesar tu solicitud.';
 
     // Check if it's a Twilio error and provide a more specific message
     if (error.code) { // Twilio errors usually have a 'code' property
-        errorMessage = `Error de Twilio: ${error.message}. Por favor, verifica que el número de teléfono sea válido y esté en formato internacional (ej: +584121234567).`;
+      errorMessage = `Error de Twilio: ${error.message}. Por favor, verifica que el número de teléfono sea válido y esté en formato internacional (ej: +584121234567).`;
+    } else if (error.message.includes('permission-denied')) {
+        errorMessage = 'Error de base de datos: Permiso denegado. Contacta al administrador.'
     }
 
+
     return {
-      response: '',
       sentTo: '',
       error: errorMessage,
     };
