@@ -2,11 +2,11 @@ import { chat } from "@/ai/flows/chat";
 import { NextRequest, NextResponse } from "next/server";
 import { twiml } from "twilio";
 import { firebaseConfig } from '@/firebase/config';
-import { initializeApp, getApps } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 
-
-// Ensure Firebase is initialized
+// Initialize Firebase for server-side operations
+// This check ensures we don't re-initialize on every action
 if (!getApps().length) {
   initializeApp(firebaseConfig);
 }
@@ -25,14 +25,21 @@ export async function POST(req: NextRequest) {
 
     const whatsappNumber = from.replace('whatsapp:', '');
 
-    // 1. Process the message with the AI agent
-    const { response: aiResponse } = await chat({ message });
-
-    // 2. Save the AI's response to Firestore
+    // 1. Find the contact document to save the AI response
     const contactsCollection = collection(firestore, 'contacts');
     const q = query(contactsCollection, where('whatsappNumber', '==', whatsappNumber));
     const querySnapshot = await getDocs(q);
+    
+    // The contact should have been created by the initial form submission.
+    // If not, we can't save the AI message, but we should still reply.
+    if (querySnapshot.empty) {
+       console.warn(`Webhook received message from unknown contact: ${whatsappNumber}. The initial form submission might have failed.`);
+    }
 
+    // 2. Process the message with the AI agent to get a response
+    const { response: aiResponse } = await chat({ message });
+
+    // 3. Save the AI's response to Firestore if the contact exists
     if (!querySnapshot.empty) {
       const contactDoc = querySnapshot.docs[0];
       const messagesCollection = collection(firestore, 'contacts', contactDoc.id, 'messages');
@@ -44,10 +51,8 @@ export async function POST(req: NextRequest) {
       // Also update the last message timestamp on the contact
       await updateDoc(doc(firestore, 'contacts', contactDoc.id), { lastMessageAt: serverTimestamp() });
     }
-    // If the contact doesn't exist, something went wrong in the initial form submission,
-    // but we should still send the reply.
 
-    // 3. Create the TwiML response for Twilio
+    // 4. Create the TwiML response to send the message back to the user
     const messagingResponse = new twiml.MessagingResponse();
     messagingResponse.message(aiResponse);
 
@@ -56,10 +61,12 @@ export async function POST(req: NextRequest) {
         "Content-Type": "text/xml",
       },
     });
+
   } catch (error) {
     console.error("Error processing Twilio webhook:", error);
     const messagingResponse = new twiml.MessagingResponse();
     messagingResponse.message("Lo siento, he encontrado un error al procesar tu solicitud. Por favor, inténtalo de nuevo.");
+    
     return new NextResponse(messagingResponse.toString(), {
       status: 500,
       headers: {
