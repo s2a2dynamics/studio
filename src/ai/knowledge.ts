@@ -66,8 +66,8 @@ export const KNOWLEDGE_BASE = `## 🇻🇪 Informe Estructurado de la Federació
 
 | Plan | Amateurs (hasta 69 años) | Seniors, Damas, Juveniles y Pre-Juv. | Beneficios Clave |
 | :--- | :--- | :--- | :--- |
-| Premium Golfista (Nuevo) | \$99 USD | \$75 USD | [cite_start]Carnet Digital, 1 Green Fee GRATIS (limitado a los 200 primeros), Versión PRO de The Grint APP (Valor \$60 USD), Beneficios Plan Básico [cite: 67, 69] |
-| Básico | \$75 USD | \$40 USD | [cite_start]Acceso a Torneos, Handicap Federado (HCP), Plan Privilegios FVG [cite: 67] |
+| Premium Golfista (Nuevo) | \\$99 USD | \\$75 USD | [cite_start]Carnet Digital, 1 Green Fee GRATIS (limitado a los 200 primeros), Versión PRO de The Grint APP (Valor \\$60 USD), Beneficios Plan Básico [cite: 67, 69] |
+| Básico | \\$75 USD | \\$40 USD | [cite_start]Acceso a Torneos, Handicap Federado (HCP), Plan Privilegios FVG [cite: 67] |
 
 * [cite_start]**Política Financiera:** Las cuotas se establecen en dólares estadounidenses (USD)[cite: 72]. [cite_start]El equivalente en bolívares se calcula usando la tasa oficial del EUROS BCV, protegiendo los ingresos contra la volatilidad de la moneda local[cite: 73, 74].
 * [cite_start]**Fomento Juvenil:** Los jugadores de la categoría Infantil están exentos del pago de la cuota de afiliación[cite: 75].
@@ -98,9 +98,9 @@ export const KNOWLEDGE_BASE = `## 🇻🇪 Informe Estructurado de la Federació
 
 #### 3.2 Detalle Operacional del Ranking Juvenil Femenino
 
-* [cite_start]**Variables de Clasificación:** La clasificación se basa en la posición actual (POS), posición anterior (ANT), diferencia de posición (DIF), número de eventos jugados (\$N^{o}\$ Eventos), Puntos Originales (\$Pts Orig.\$) y **Puntos Ajustados** (\$Pts Ajust.\$)[cite: 105].
+* [cite_start]**Variables de Clasificación:** La clasificación se basa en la posición actual (POS), posición anterior (ANT), diferencia de posición (DIF), número de eventos jugados (\\$N^{o}\\$ Eventos), Puntos Originales (\\$Pts Orig.\\$) y **Puntos Ajustados** (\\$Pts Ajust.\\$)[cite: 105].
 * [cite_start]**Líder de Categoría:** Maria Mercedes Tablante lidera el ranking Juvenil Femenino (Semana 45, 2025)[cite: 106, 108].
-* [cite_start]**Metodología Métrica:** La posición final depende de los Puntos Ajustados, lo que implica una fórmula sofisticada con un factor de ponderación o un divisor[cite: 109, 111]. [cite_start]El reglamento específico para calcular los \$Pts Ajustados\$ a partir de los \$Pts Orig.\$ no está públicamente accesible, lo que constituye una laguna en la transparencia regulatoria[cite: 112, 113].
+* [cite_start]**Metodología Métrica:** La posición final depende de los Puntos Ajustados, lo que implica una fórmula sofisticada con un factor de ponderación o un divisor[cite: 109, 111]. [cite_start]El reglamento específico para calcular los \\$Pts Ajustados\\$ a partir de los \\$Pts Orig.\\$ no está públicamente accesible, lo que constituye una laguna en la transparencia regulatoria[cite: 112, 113].
 
 ---
 
