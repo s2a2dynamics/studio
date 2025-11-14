@@ -16,10 +16,11 @@ export async function POST(req: NextRequest) {
     // Process the message with the AI
     const { response: aiResponse } = await chat({ message });
     
-    // Create the debug message
+    // Create the debug message that includes the original message and the AI response
     const debugMessage = `DEBUG - Mensaje recibido de Twilio: "${message}"\n\n${aiResponse}`;
 
     const messagingResponse = new twiml.MessagingResponse();
+    // Use the debugMessage variable in the response
     messagingResponse.message(debugMessage);
 
     return new NextResponse(messagingResponse.toString(), {
