@@ -2,21 +2,26 @@ import { chat } from "@/ai/flows/chat";
 import { NextRequest, NextResponse } from "next/server";
 import twilio from "twilio";
 import { addDoc, collection, getDocs, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
-import { firestore } from '@/lib/firebase-admin';
+import { getAdminFirestore } from '@/lib/firebase-admin';
 
 // Initialize the Twilio client with credentials from the environment
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 
-// Ensure credentials are present
-if (!accountSid || !authToken || !twilioPhoneNumber) {
-  throw new Error("Twilio credentials are not configured in environment variables.");
-}
-
 const client = twilio(accountSid, authToken);
 
 export async function POST(req: NextRequest) {
+  if (!accountSid || !authToken || !twilioPhoneNumber) {
+    console.error("Twilio credentials are not configured in environment variables.");
+    const twiml = new twilio.twiml.MessagingResponse();
+    twiml.message(`Lo siento, el servicio de mensajería no está configurado correctamente (missing credentials).`);
+    return new NextResponse(twiml.toString(), { 
+        status: 500, 
+        headers: { 'Content-Type': 'text/xml' } 
+    });
+  }
+
   try {
     const body = await req.text();
     const params = new URLSearchParams(body);
@@ -31,21 +36,28 @@ export async function POST(req: NextRequest) {
     const { response: aiResponse } = await chat({ message });
 
     // 2. Save the AI's response to the database
-    const contactsCollection = collection(firestore, 'contacts');
-    const q = query(contactsCollection, where('whatsappNumber', '==', from.replace('whatsapp:', '')));
-    const querySnapshot = await getDocs(q);
+    try {
+        const firestore = getAdminFirestore();
+        const whatsappNumberOnly = from.replace('whatsapp:', '');
+        const contactsCollection = collection(firestore, 'contacts');
+        const q = query(contactsCollection, where('whatsappNumber', '==', whatsappNumberOnly));
+        const querySnapshot = await getDocs(q);
 
-    if (!querySnapshot.empty) {
-        const contactDoc = querySnapshot.docs[0];
-        const messagesCollection = collection(firestore, 'contacts', contactDoc.id, 'messages');
-        await addDoc(messagesCollection, {
-            message: aiResponse,
-            sentAt: serverTimestamp(),
-            from: 'ai'
-        });
-        await updateDoc(contactDoc.ref, { lastMessageAt: serverTimestamp() });
-    } else {
-        console.warn(`Contact not found for WhatsApp number: ${from}`);
+        if (!querySnapshot.empty) {
+            const contactDoc = querySnapshot.docs[0];
+            const messagesCollection = collection(firestore, 'contacts', contactDoc.id, 'messages');
+            await addDoc(messagesCollection, {
+                message: aiResponse,
+                sentAt: serverTimestamp(),
+                from: 'ai'
+            });
+            await updateDoc(contactDoc.ref, { lastMessageAt: serverTimestamp() });
+        } else {
+            console.warn(`Contact not found for WhatsApp number: ${from}. AI response not saved.`);
+        }
+    } catch(dbError: any) {
+        console.error("Error saving AI response to Firestore:", dbError.message);
+        // We will still attempt to send the message to the user
     }
 
 

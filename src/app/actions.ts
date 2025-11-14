@@ -1,8 +1,7 @@
 'use server';
 
-import { addDoc, collection, getDocs, query, serverTimestamp, setDoc, updateDoc, where, doc } from 'firebase/firestore';
-import { firestore }from '@/lib/firebase-admin';
-
+import { collection, getDocs, query, serverTimestamp, setDoc, updateDoc, where, doc } from 'firebase/firestore';
+import { getAdminFirestore } from '@/lib/firebase-admin';
 
 export async function askAI(prevState: any, formData: FormData) {
   const message = formData.get('message') as string;
@@ -16,6 +15,7 @@ export async function askAI(prevState: any, formData: FormData) {
   }
 
   try {
+    const firestore = getAdminFirestore();
     // 1. Find or create the contact
     const contactsCollection = collection(firestore, 'contacts');
     const q = query(contactsCollection, where('whatsappNumber', '==', whatsappNumber));
@@ -52,7 +52,7 @@ export async function askAI(prevState: any, formData: FormData) {
     return { sentTo: whatsappNumber, error: null };
 
   } catch (error: any) {
-    console.error('Error saving to Firestore:', error);
+    console.error('Error in askAI Server Action:', error);
     // This error now correctly points to a database issue.
     return {
       sentTo: '',
