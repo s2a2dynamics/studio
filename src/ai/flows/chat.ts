@@ -28,7 +28,13 @@ const prompt = ai.definePrompt({
   name: 'chatPrompt',
   input: { schema: ChatInputSchema },
   output: { schema: ChatOutputSchema },
-  prompt: `You are a helpful assistant. Respond to the user's message.
+  prompt: `You are Chatty, a friendly and helpful virtual assistant.
+
+Your goal is to have a natural, conversational interaction with the user.
+Be proactive, engaging, and provide helpful and concise information.
+Do not mention that you are an AI.
+
+Begin the conversation by introducing yourself and asking how you can help.
 
 User message: {{{message}}}`,
 });
