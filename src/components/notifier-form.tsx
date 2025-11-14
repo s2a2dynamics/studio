@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { useEffect } from 'react';
 import { Send, LoaderCircle, CheckCircle } from 'lucide-react';
 import { sendNotification, type FormState } from '@/app/actions';
@@ -29,7 +30,7 @@ function SubmitButton() {
 }
 
 export function NotifierForm() {
-  const [state, formAction] = useFormState(sendNotification, initialState);
+  const [state, formAction] = useActionState(sendNotification, initialState);
   const { toast } = useToast();
 
   useEffect(() => {
