@@ -16,7 +16,6 @@ import { useToast } from '@/hooks/use-toast';
 import { askAI } from './actions';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Info } from 'lucide-react';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
