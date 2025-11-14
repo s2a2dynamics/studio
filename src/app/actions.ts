@@ -17,13 +17,15 @@ export async function sendMessage(prevState: any, formData: FormData) {
   }
 
   // Agrega el prefijo de WhatsApp si no está presente
-  const formattedPhoneNumber = `whatsapp:${phoneNumber.startsWith('+') ? '' : '+'}${phoneNumber.replace(/\s+/g, '')}`;
+  const toPhoneNumber = `whatsapp:${phoneNumber.startsWith('+') ? '' : '+'}${phoneNumber.replace(/\s+/g, '')}`;
+  const fromPhoneNumber = `whatsapp:${twilioPhoneNumber}`;
+
 
   try {
     await client.messages.create({
       body: message,
-      from: twilioPhoneNumber,
-      to: formattedPhoneNumber,
+      from: fromPhoneNumber,
+      to: toPhoneNumber,
     });
     return { success: true, message: '¡Mensaje enviado! Revisa tu WhatsApp.' };
   } catch (error: any) {
