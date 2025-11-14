@@ -28,7 +28,7 @@ function SubmitButton() {
 export default function Home() {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
-  const [state, formAction, isPending] = useActionState(askAI, {
+  const [state, formAction] = useActionState(askAI, {
     response: '',
     sentTo: '',
     error: null,
@@ -42,7 +42,7 @@ export default function Home() {
         variant: 'destructive',
       });
     }
-    if (state.response && !state.error) {
+    if (state.sentTo && !state.error) {
       toast({
         title: '¡Mensaje Enviado!',
         description: `La consulta ha sido enviada a ${state.sentTo} y guardada correctamente.`,
@@ -59,7 +59,7 @@ export default function Home() {
           <CardDescription>
             Escribe tu consulta y tu número de WhatsApp. Recibirás la respuesta
             directamente en tu teléfono.
-          </cardDescription>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form ref={formRef} action={formAction} className="space-y-4">
