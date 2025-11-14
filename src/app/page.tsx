@@ -33,6 +33,7 @@ export default function Home() {
   const [state, formAction, isPending] = useActionState(askAI, {
     response: '',
     whatsappNumber: '',
+    twilioPhoneNumber: '',
     error: null,
   });
 
@@ -85,8 +86,12 @@ export default function Home() {
             <Separator className="my-4" />
             <CardFooter className="flex flex-col items-start gap-4">
               <div>
-                <h3 className="font-semibold">Número de WhatsApp:</h3>
+                <h3 className="font-semibold">Tu Número de WhatsApp:</h3>
                 <p className="text-sm text-gray-700">{state.whatsappNumber}</p>
+              </div>
+               <div>
+                <h3 className="font-semibold">Enviado desde (Twilio):</h3>
+                <p className="text-sm text-gray-700">{state.twilioPhoneNumber}</p>
               </div>
               <div>
                 <h3 className="font-semibold">Respuesta de la IA:</h3>
