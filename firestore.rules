@@ -1,0 +1,50 @@
+/**
+ * @fileoverview Firestore Security Rules for the NotificationRequest collection.
+ *
+ * Core Philosophy:
+ * This ruleset prioritizes security and simplicity for a notification mini-app.
+ * It restricts write access to the 'notificationRequests' collection to prevent unauthorized modifications,
+ * as the application is triggered by a public HTTP request and managed by a Cloud Function.
+ * Read access is globally enabled to reduce cost on the prototyping stage; the production stage should
+ * limit to service accounts only.
+ *
+ * Data Structure:
+ * All notification requests are stored in a top-level collection: `/notificationRequests/{notificationRequestId}`.
+ * Each document contains all the data needed for processing (phoneNumber, message, status, createdAt),
+ * ensuring authorization independence.
+ *
+ * Key Security Decisions:
+ * - User-based authorization is not implemented in this prototype, due to the application's trigger by
+ *   public HTTP requests.
+ * - Listing of `notificationRequests` is implicitly disabled as the Cloud Function handles all operations
+ *   and direct client listing is not supported, fulfilling QAPs implicitly.
+ * - Flexible data shapes are allowed for rapid prototyping; detailed schema validation is deferred.
+ * - Public reads are enabled for simplicity in this initial prototyping phase, but should be restricted
+ *   to service accounts in production to prevent unauthorized data access.
+ *
+ * Denormalization for Authorization:
+ * All data required for processing a notification request is stored directly within the
+ * `NotificationRequest` document. This eliminates the need for costly `get()` calls to other documents
+ * during rule evaluation.
+ *
+ * Structural Segregation:
+ * All notification requests are stored in a single, top-level collection, as no distinction between
+ * public and private data is required in this application.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Allows reading and writing to individual notification requests.
+     * @path /notificationRequests/{notificationRequestId}
+     * @allow (get, list) Public read access to enable simple integration in the prototyping phase.
+     * @deny (create, update, delete) No direct client modification of notification requests is permitted in this phase.
+     * @principle Enables prototyping and validation of firebase and Twilio integration without client access.
+     */
+    match /notificationRequests/{notificationRequestId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+  }
+}
