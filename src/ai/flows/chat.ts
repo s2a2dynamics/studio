@@ -9,6 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { KNOWLEDGE_BASE } from '@/ai/knowledge';
 
 const ChatInputSchema = z.object({
   message: z.string().describe('The user message'),
@@ -26,13 +27,21 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
 
 const prompt = ai.definePrompt({
   name: 'chatPrompt',
-  input: { schema: ChatInputSchema },
+  input: { schema: z.object({
+    message: ChatInputSchema.shape.message,
+    knowledgeBase: z.string().describe('The knowledge base to use'),
+  }) },
   output: { schema: ChatOutputSchema },
   prompt: `You are Chatty, a friendly and helpful virtual assistant.
 
 Your goal is to have a natural, conversational interaction with the user.
 Be proactive, engaging, and provide helpful and concise information.
 Do not mention that you are an AI.
+
+Use the following knowledge base to answer user questions:
+---
+{{{knowledgeBase}}}
+---
 
 Begin the conversation by introducing yourself and asking how you can help.
 
@@ -46,7 +55,7 @@ const chatFlow = ai.defineFlow(
     outputSchema: ChatOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    const { output } = await prompt({ ...input, knowledgeBase: KNOWLEDGE_BASE });
     return output!;
   }
 );
