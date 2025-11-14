@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useActionState, useEffect } from "react";
@@ -18,8 +17,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { MessageSquare, Send } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal } from "lucide-react";
 
 interface FormState {
   success: boolean;
@@ -58,18 +55,6 @@ export default function Home() {
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-6">
-        <Alert>
-          <Terminal className="h-4 w-4" />
-          <AlertTitle>¡Acción Requerida!</AlertTitle>
-          <AlertDescription>
-            Para recibir respuestas en WhatsApp, configura tu Webhook en Twilio.
-            Usa la siguiente URL en el campo 'WHEN A MESSAGE COMES IN':
-            <pre className="mt-2 rounded-md bg-muted p-2 text-sm">
-              [URL de tu app desplegada]<strong>/api/chat</strong>
-            </pre>
-          </AlertDescription>
-        </Alert>
-
         <Card className="w-full shadow-lg">
           <CardHeader className="items-center text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/20 text-accent">
