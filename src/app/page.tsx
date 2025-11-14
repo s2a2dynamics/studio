@@ -15,12 +15,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { askAI } from './actions';
 import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} className="w-full">
-      {pending ? 'Enviando...' : 'Enviar Consulta por WhatsApp'}
+      {pending ? 'Enviando...' : 'Enviar Consulta'}
     </Button>
   );
 }
@@ -29,7 +31,6 @@ export default function Home() {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction] = useActionState(askAI, {
-    response: '',
     sentTo: '',
     error: null,
   });
@@ -44,8 +45,8 @@ export default function Home() {
     }
     if (state.sentTo && !state.error) {
       toast({
-        title: '¡Mensaje Enviado!',
-        description: `La consulta ha sido enviada a ${state.sentTo} y guardada correctamente.`,
+        title: '¡Consulta Guardada!',
+        description: `Tu consulta ha sido guardada. La respuesta llegará a ${state.sentTo} en breve.`,
       });
       formRef.current?.reset();
     }
@@ -62,6 +63,14 @@ export default function Home() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <Alert className="mb-4">
+            <Info className="h-4 w-4" />
+            <AlertTitle>¡Importante!</AlertTitle>
+            <AlertDescription>
+              Para que esto funcione, debes configurar el webhook de tu número de Twilio para que apunte a 
+              la URL de la API de tu aplicación desplegada: <strong>/api/chat</strong>
+            </AlertDescription>
+          </Alert>
           <form ref={formRef} action={formAction} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="whatsappNumber">Tu Número de WhatsApp</Label>
