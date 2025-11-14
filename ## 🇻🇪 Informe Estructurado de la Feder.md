@@ -1,4 +1,4 @@
-export const KNOWLEDGE_BASE = `## 🇻🇪 Informe Estructurado de la Federación Venezolana de Golf (FVG): Base de Conocimiento Técnico
+## 🇻🇪 Informe Estructurado de la Federación Venezolana de Golf (FVG): Base de Conocimiento Técnico
 
 [cite_start]Este documento presenta un análisis exhaustivo de la Federación Venezolana de Golf (FVG), abarcando su estructura organizacional, gobernanza, marco regulatorio internacional, sistema de afiliación y metodología competitiva[cite: 1, 2].
 
@@ -98,9 +98,9 @@ export const KNOWLEDGE_BASE = `## 🇻🇪 Informe Estructurado de la Federació
 
 #### 3.2 Detalle Operacional del Ranking Juvenil Femenino
 
-* [cite_start]**Variables de Clasificación:** La clasificación se basa en la posición actual (POS), posición anterior (ANT), diferencia de posición (DIF), número de eventos jugados (\$N^{o}\$ Eventos), Puntos Originales (\$Pts Orig.\$) y **Puntos Ajustados** (\$Pts Ajust.\$)[cite: 105].
+* [cite_start]**Variables de Clasificación:** La clasificación se basa en la posición actual (POS), posición anterior (ANT), diferencia de posición (DIF), número de eventos jugados ($N^{o}$ Eventos), Puntos Originales ($Pts Orig.$) y **Puntos Ajustados** ($Pts Ajust.$)[cite: 105].
 * [cite_start]**Líder de Categoría:** Maria Mercedes Tablante lidera el ranking Juvenil Femenino (Semana 45, 2025)[cite: 106, 108].
-* [cite_start]**Metodología Métrica:** La posición final depende de los Puntos Ajustados, lo que implica una fórmula sofisticada con un factor de ponderación o un divisor[cite: 109, 111]. [cite_start]El reglamento específico para calcular los \$Pts Ajustados\$ a partir de los \$Pts Orig.\$ no está públicamente accesible, lo que constituye una laguna en la transparencia regulatoria[cite: 112, 113].
+* [cite_start]**Metodología Métrica:** La posición final depende de los Puntos Ajustados, lo que implica una fórmula sofisticada con un factor de ponderación o un divisor[cite: 109, 111]. [cite_start]El reglamento específico para calcular los $Pts Ajustados$ a partir de los $Pts Orig.$ no está públicamente accesible, lo que constituye una laguna en la transparencia regulatoria[cite: 112, 113].
 
 ---
 
@@ -136,4 +136,3 @@ export const KNOWLEDGE_BASE = `## 🇻🇪 Informe Estructurado de la Federació
 * [cite_start]**Sistema Competitivo:** El Escalafón Nacional es la métrica central[cite: 148]. [cite_start]El proceso de **Aval** actúa como un control de calidad, exigiendo la invitación a los mejores ranqueados y la participación de un **50% de jugadores foráneos**, lo que valida la precisión del ranking[cite: 149, 150].
 
 ¿Hay alguna sección específica de este informe sobre la FVG que le gustaría que desarrolle o resuma con más detalle?
-`;
