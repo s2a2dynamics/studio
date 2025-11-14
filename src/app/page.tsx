@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useRef } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,12 +29,14 @@ function SubmitButton() {
 export default function Home() {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
-  const [state, formAction] = useActionState(askAI, {
+  const [state, formAction, isPending] = useActionState(askAI, {
     sentTo: '',
     error: null,
   });
 
   useEffect(() => {
+    if (isPending) return;
+
     if (state.error) {
       toast({
         title: 'Error',
@@ -42,6 +44,7 @@ export default function Home() {
         variant: 'destructive',
       });
     }
+    
     if (state.sentTo && !state.error) {
       toast({
         title: '¡Consulta Guardada!',
@@ -49,7 +52,7 @@ export default function Home() {
       });
       formRef.current?.reset();
     }
-  }, [state, toast]);
+  }, [state, isPending, toast]);
 
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-gray-100 p-4">
