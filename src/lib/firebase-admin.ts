@@ -11,7 +11,9 @@ let firestore: Firestore | null = null;
 function initializeFirebaseAdmin() {
   if (!getApps().length) {
     try {
-      const serviceAccount = require('../../firebase-service-account.json');
+      // This pattern allows the app to build even if the file is missing.
+      // The error will only be thrown at runtime when the admin SDK is actually used.
+      const serviceAccount = require('../../../firebase-service-account.json');
       app = initializeApp({
         credential: cert(serviceAccount),
       });
