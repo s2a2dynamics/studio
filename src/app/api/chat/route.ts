@@ -32,11 +32,12 @@ export async function POST(req: NextRequest) {
 
     // 1. Encontrar el documento del contacto para guardar la respuesta de la IA
     const contactsCollection = collection(firestore, 'contacts');
-    const q = query(contactsCollection, where('whatsappNumber', '==', `+${whatsappNumber}`));
+    // The number from Twilio doesn't include a '+', but our form does. Let's try both.
+    const q = query(contactsCollection, where('whatsappNumber', 'in', [whatsappNumber, `+${whatsappNumber}`]));
     const querySnapshot = await getDocs(q);
     
     if (querySnapshot.empty) {
-       console.warn(`Webhook received message from unknown contact: ${whatsappNumber}. The initial form submission might have failed.`);
+       console.warn(`Webhook received message from unknown contact: ${whatsappNumber}. The initial form submission might have failed or the number format is different.`);
     }
 
     // 2. Procesar el mensaje con el agente de IA para obtener una respuesta
@@ -62,8 +63,11 @@ export async function POST(req: NextRequest) {
     });
 
     // 5. Devolver una respuesta vacía a Twilio para confirmar la recepción
-    // Usamos '204 No Content' para indicar que todo fue bien pero no hay nada que responder en TwiML
-    return new NextResponse(null, { status: 204 });
+    const twiml = new twilio.twiml.MessagingResponse();
+    return new NextResponse(twiml.toString(), { 
+        status: 200, 
+        headers: { 'Content-Type': 'text/xml' } 
+    });
 
   } catch (error: any) {
     console.error("Error processing Twilio webhook:", error);
