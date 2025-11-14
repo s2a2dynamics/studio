@@ -32,10 +32,9 @@ export async function askAI(prevState: any, formData: FormData) {
 
   } catch (error: any) {
     console.error('Error in askAI Server Action:', error);
-    // This error now correctly points to a database issue.
     return {
       sentTo: '',
-      error: `Hubo un error al guardar tu consulta en la base de datos. Detalles: ${error.message}`,
+      error: `Hubo un error al guardar tu consulta en la base de datos. Por favor, intenta de nuevo.`,
     };
   }
 }

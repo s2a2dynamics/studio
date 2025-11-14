@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { ProtectedRoute } from '@/components/auth/protected-route';
@@ -9,8 +8,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { LogoutButton } from '@/components/auth/logout-button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageCircle, MessagesSquare } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 type Contact = {
   id: string;
