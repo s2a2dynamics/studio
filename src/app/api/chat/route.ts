@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     // 2. Send the response back to the user using the Twilio client
     await client.messages.create({
       body: aiResponse,
-      from: twilioPhoneNumber,
+      from: twilioPhoneNumber, // This is your Twilio WhatsApp number
       to: from,
     });
 
