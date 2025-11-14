@@ -25,16 +25,6 @@ export async function askAI(prevState: any, formData: FormData) {
     // 2. Send response via Twilio
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
-
-    if (!accountSid || !authToken) {
-      console.error('Twilio credentials are not set in .env file');
-      return {
-        response: '',
-        sentTo: '',
-        error: 'Las credenciales de Twilio no están configuradas en el servidor.',
-      };
-    }
-
     const client = new Twilio(accountSid, authToken);
 
     await client.messages.create({
@@ -56,10 +46,17 @@ export async function askAI(prevState: any, formData: FormData) {
     return { response, sentTo: whatsappNumber, error: null };
   } catch (error: any) {
     console.error('Error in askAI action:', error);
+    let errorMessage = 'Hubo un error al procesar tu solicitud.';
+
+    // Check if it's a Twilio error and provide a more specific message
+    if (error.code) { // Twilio errors usually have a 'code' property
+        errorMessage = `Error de Twilio: ${error.message}. Por favor, verifica que el número de teléfono sea válido y esté en formato internacional (ej: +584121234567).`;
+    }
+
     return {
       response: '',
       sentTo: '',
-      error: 'Hubo un error al procesar tu solicitud. Verifica el número de teléfono y tus credenciales de Twilio.',
+      error: errorMessage,
     };
   }
 }
