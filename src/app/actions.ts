@@ -1,18 +1,9 @@
 'use server';
 
-import { firebaseConfig } from '@/firebase/config';
-import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, collection, query, where, getDocs, doc, setDoc, serverTimestamp, updateDoc, addDoc } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, serverTimestamp, setDoc, updateDoc, where, doc } from 'firebase/firestore';
+import { firestore }from '@/lib/firebase-admin';
 
-// Initialize Firebase for server-side operations
-// This check ensures we don't re-initialize on every action
-if (!getApps().length) {
-  initializeApp(firebaseConfig);
-}
-const firestore = getFirestore();
 
-// This action is now only responsible for saving the incoming message to Firestore.
-// The AI response and Twilio reply are handled by the /api/chat webhook.
 export async function askAI(prevState: any, formData: FormData) {
   const message = formData.get('message') as string;
   const whatsappNumber = formData.get('whatsappNumber') as string;
@@ -61,11 +52,11 @@ export async function askAI(prevState: any, formData: FormData) {
     return { sentTo: whatsappNumber, error: null };
 
   } catch (error: any) {
-    console.error('Error in askAI action (saving to Firestore):', error);
-    // This error indicates a problem with the Firestore operation itself.
+    console.error('Error saving to Firestore:', error);
+    // This error now correctly points to a database issue.
     return {
       sentTo: '',
-      error: 'Hubo un error al guardar tu consulta en la base de datos. Por favor, revisa los permisos de Firestore.',
+      error: `Hubo un error al guardar tu consulta en la base de datos. Detalles: ${error.message}`,
     };
   }
 }
