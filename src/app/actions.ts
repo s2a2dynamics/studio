@@ -2,9 +2,10 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { getFirestore, collection, query, where, getDocs, doc, setDoc, serverTimestamp, updateDoc, addDoc } from 'firebase/firestore';
 
-// Initialize Firebase Admin SDK for server-side operations
+// Initialize Firebase for server-side operations
+// This check ensures we don't re-initialize on every action
 if (!getApps().length) {
   initializeApp(firebaseConfig);
 }
@@ -24,7 +25,7 @@ export async function askAI(prevState: any, formData: FormData) {
   }
 
   try {
-    // Save contact and message to Firestore
+    // 1. Find or create the contact
     const contactsCollection = collection(firestore, 'contacts');
     const q = query(contactsCollection, where('whatsappNumber', '==', whatsappNumber));
     const querySnapshot = await getDocs(q);
@@ -32,7 +33,7 @@ export async function askAI(prevState: any, formData: FormData) {
     let contactId: string;
 
     if (querySnapshot.empty) {
-      // Create new contact
+      // Create new contact document if it doesn't exist
       const newContactRef = doc(contactsCollection);
       await setDoc(newContactRef, { 
         whatsappNumber: whatsappNumber,
@@ -40,14 +41,14 @@ export async function askAI(prevState: any, formData: FormData) {
       });
       contactId = newContactRef.id;
     } else {
-      // Contact exists
+      // Contact already exists, get its ID
       const contactDoc = querySnapshot.docs[0];
       contactId = contactDoc.id;
-      // Update lastMessageAt timestamp
+      // Update lastMessageAt timestamp for existing contact
       await updateDoc(doc(firestore, 'contacts', contactId), { lastMessageAt: serverTimestamp() });
     }
 
-    // Add user's message to messages subcollection
+    // 2. Add the user's message to the messages subcollection
     const messagesCollection = collection(firestore, 'contacts', contactId, 'messages');
     await addDoc(messagesCollection, {
         message: message,
@@ -56,13 +57,12 @@ export async function askAI(prevState: any, formData: FormData) {
     });
     
     // The AI response will be triggered by Twilio calling our webhook.
-    // We simulate a successful submission here.
+    // We return a success state to the UI.
     return { sentTo: whatsappNumber, error: null };
 
   } catch (error: any) {
     console.error('Error in askAI action (saving to Firestore):', error);
-    // This error is now more likely to be a Firestore permission error
-    // if rules are misconfigured.
+    // This error indicates a problem with the Firestore operation itself.
     return {
       sentTo: '',
       error: 'Hubo un error al guardar tu consulta en la base de datos. Por favor, revisa los permisos de Firestore.',
