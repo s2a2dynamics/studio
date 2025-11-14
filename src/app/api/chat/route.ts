@@ -13,15 +13,12 @@ export async function POST(req: NextRequest) {
       return new Response("Missing message or from", { status: 400 });
     }
     
-    // Process the message with the AI
+    // Procesa el mensaje con el agente de IA
     const { response: aiResponse } = await chat({ message });
-    
-    // Create the debug message that includes the original message and the AI response
-    const debugMessage = `DEBUG - Mensaje recibido de Twilio: "${message}"\n\n${aiResponse}`;
 
+    // Crea la respuesta para Twilio usando la respuesta de la IA
     const messagingResponse = new twiml.MessagingResponse();
-    // Use the debugMessage variable in the response
-    messagingResponse.message(debugMessage);
+    messagingResponse.message(aiResponse);
 
     return new NextResponse(messagingResponse.toString(), {
       headers: {
