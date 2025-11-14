@@ -22,7 +22,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} className="w-full">
-      {pending ? 'Enviando...' : 'Enviar Mensaje'}
+      {pending ? 'Enviando...' : 'Enviar y Recibir por WhatsApp'}
     </Button>
   );
 }
@@ -32,8 +32,7 @@ export default function Home() {
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, isPending] = useActionState(askAI, {
     response: '',
-    whatsappNumber: '',
-    twilioPhoneNumber: '',
+    sentTo: '',
     error: null,
   });
 
@@ -45,16 +44,23 @@ export default function Home() {
         variant: 'destructive',
       });
     }
+    if (state.response && !state.error) {
+      toast({
+        title: '¡Mensaje Enviado!',
+        description: `La respuesta ha sido enviada a ${state.sentTo}`,
+      });
+      formRef.current?.reset();
+    }
   }, [state, toast]);
 
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-gray-100 p-4">
       <Card className="w-full max-w-lg shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl">Asistente Virtual</CardTitle>
+          <CardTitle className="text-2xl">Asistente Virtual FVG</CardTitle>
           <CardDescription>
-            Escribe tu consulta para iniciar una conversación con nuestro
-            asistente de IA.
+            Escribe tu consulta y recibe la respuesta directamente en tu
+            WhatsApp.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -64,7 +70,7 @@ export default function Home() {
               <Input
                 id="whatsappNumber"
                 name="whatsappNumber"
-                placeholder="Ej: +1234567890"
+                placeholder="Ej: +584121234567 (incluye el código de país)"
                 required
               />
             </div>
@@ -73,7 +79,7 @@ export default function Home() {
               <Textarea
                 id="message"
                 name="message"
-                placeholder="Escribe aquí tu pregunta..."
+                placeholder="Escribe aquí tu pregunta sobre la FVG..."
                 required
                 className="min-h-[100px]"
               />
@@ -81,20 +87,12 @@ export default function Home() {
             <SubmitButton />
           </form>
         </CardContent>
-        {state.response && (
+        {state.response && !state.error && (
           <>
             <Separator className="my-4" />
             <CardFooter className="flex flex-col items-start gap-4">
-              <div>
-                <h3 className="font-semibold">Tu Número de WhatsApp:</h3>
-                <p className="text-sm text-gray-700">{state.whatsappNumber}</p>
-              </div>
                <div>
-                <h3 className="font-semibold">Enviado desde (Twilio):</h3>
-                <p className="text-sm text-gray-700">{state.twilioPhoneNumber}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold">Respuesta de la IA:</h3>
+                <h3 className="font-semibold">Respuesta Enviada a {state.sentTo}:</h3>
                 <p className="text-sm text-gray-700">{state.response}</p>
               </div>
             </CardFooter>
