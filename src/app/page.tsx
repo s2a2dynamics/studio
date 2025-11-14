@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { askAI } from './actions';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -31,6 +32,7 @@ export default function Home() {
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, isPending] = useActionState(askAI, {
     response: '',
+    whatsappNumber: '',
     error: null,
   });
 
@@ -57,6 +59,15 @@ export default function Home() {
         <CardContent>
           <form ref={formRef} action={formAction} className="space-y-4">
             <div className="space-y-2">
+              <Label htmlFor="whatsappNumber">Tu Número de WhatsApp</Label>
+              <Input
+                id="whatsappNumber"
+                name="whatsappNumber"
+                placeholder="Ej: +1234567890"
+                required
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="message">Tu Mensaje</Label>
               <Textarea
                 id="message"
@@ -72,9 +83,15 @@ export default function Home() {
         {state.response && (
           <>
             <Separator className="my-4" />
-            <CardFooter className="flex flex-col items-start gap-2">
-              <h3 className="font-semibold">Respuesta de la IA:</h3>
-              <p className="text-sm text-gray-700">{state.response}</p>
+            <CardFooter className="flex flex-col items-start gap-4">
+              <div>
+                <h3 className="font-semibold">Número de WhatsApp:</h3>
+                <p className="text-sm text-gray-700">{state.whatsappNumber}</p>
+              </div>
+              <div>
+                <h3 className="font-semibold">Respuesta de la IA:</h3>
+                <p className="text-sm text-gray-700">{state.response}</p>
+              </div>
             </CardFooter>
           </>
         )}
