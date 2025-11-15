@@ -1,10 +1,6 @@
 'use server';
 
-import {
-  addDoc,
-  collection,
-  serverTimestamp,
-} from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { firebaseConfig } from '@/firebase/config';
@@ -56,7 +52,7 @@ export async function askAI(prevState: any, formData: FormData) {
 
     // 2. Get AI response
     const { response: aiResponse } = await chat({ message });
-    
+
     // (Optional) Save AI response to Firestore
     await addDoc(contactsRef, {
       whatsappNumber: fromNumber,
@@ -64,7 +60,6 @@ export async function askAI(prevState: any, formData: FormData) {
       lastMessageAt: serverTimestamp(),
       from: 'ai',
     });
-
 
     // 3. Send AI response via Twilio
     const client = twilio(accountSid, authToken);
@@ -79,18 +74,25 @@ export async function askAI(prevState: any, formData: FormData) {
     console.error('Error en la acción askAI:', error);
     let detailedError = 'Hubo un error al procesar tu solicitud.';
 
-    if (error.code && error.code.includes('firestore')) {
+    if (typeof error.code === 'string' && error.code.includes('firestore')) {
       detailedError =
         'Hubo un error al guardar tu consulta en la base de datos. Por favor, revisa la configuración de Firestore y las reglas de seguridad.';
-    } else if (error.code === 21614) { // Twilio error for "To" number not opted-in for Sandbox
-       detailedError =
-        `El número ${fromNumber} no se ha unido al Sandbox de Twilio. Envía un mensaje de WhatsApp desde tu teléfono al número ${twilioPhoneNumber} para unirte y poder recibir respuestas.`;
-    } else if (error.code === 21211) { // Twilio error for invalid 'To' number
+    } else if (error.code === 21614) {
+      // Twilio error for "To" number not opted-in for Sandbox
+      detailedError = `El número ${fromNumber} no se ha unido al Sandbox de Twilio. Envía un mensaje de WhatsApp desde tu teléfono al número ${twilioPhoneNumber} para unirte y poder recibir respuestas.`;
+    } else if (error.code === 21211) {
+      // Twilio error for invalid 'To' number
       detailedError =
         'El número de WhatsApp proporcionado no es válido. Por favor, verifica e intenta de nuevo.';
-    } else if (error.code === 20003) { // Auth error
-      detailedError = 'Error de autenticación con Twilio. Verifica tu Account SID y Auth Token.';
-    } else {
+    } else if (error.code === 20003) {
+      // Auth error
+      detailedError =
+        'Error de autenticación con Twilio. Verifica tu Account SID y Auth Token.';
+    } else if (error.code === 20422) {
+        // Twilio could not find a Channel with the specified From address
+        detailedError = `El número de envío de Twilio (${twilioPhoneNumber}) no es un canal de WhatsApp válido o no está bien configurado.`
+    }
+     else {
       detailedError = `Ocurrió un error inesperado: ${error.message}`;
     }
 
