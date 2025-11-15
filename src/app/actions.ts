@@ -13,6 +13,7 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { firebaseConfig } from '@/firebase/config';
 import twilio from 'twilio';
+import 'dotenv/config';
 
 // Robust server-side Firebase initialization
 function getFirestoreInstance() {
