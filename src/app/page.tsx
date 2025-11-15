@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,7 +15,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { askAI } from './actions';
 import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -47,8 +46,8 @@ export default function Home() {
     
     if (state.sentTo && !state.error) {
       toast({
-        title: '¡Consulta Guardada!',
-        description: `Tu consulta ha sido guardada. La respuesta llegará a ${state.sentTo} en breve.`,
+        title: '¡Respuesta Enviada!',
+        description: `La respuesta ha sido enviada a ${state.sentTo}.`,
       });
       formRef.current?.reset();
     }

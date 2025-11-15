@@ -10,6 +10,7 @@ import { getFirestore } from 'firebase/firestore';
 import { firebaseConfig } from '@/firebase/config';
 import twilio from 'twilio';
 import 'dotenv/config';
+import { chat } from '@/ai/flows/chat';
 
 // Robust server-side Firebase initialization
 function getFirestoreInstance() {
@@ -21,7 +22,7 @@ function getFirestoreInstance() {
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER; // This will now include "whatsapp:"
+const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 
 export async function askAI(prevState: any, formData: FormData) {
   const message = formData.get('message') as string;
@@ -45,7 +46,7 @@ export async function askAI(prevState: any, formData: FormData) {
     const firestore = getFirestoreInstance();
     const contactsRef = collection(firestore, 'contacts');
 
-    // Always create a new document for each message
+    // 1. Save user's message to Firestore
     await addDoc(contactsRef, {
       whatsappNumber: fromNumber,
       message: message,
@@ -53,11 +54,23 @@ export async function askAI(prevState: any, formData: FormData) {
       from: 'user',
     });
 
-    // Send message via Twilio
+    // 2. Get AI response
+    const { response: aiResponse } = await chat({ message });
+    
+    // (Optional) Save AI response to Firestore
+    await addDoc(contactsRef, {
+      whatsappNumber: fromNumber,
+      message: aiResponse,
+      lastMessageAt: serverTimestamp(),
+      from: 'ai',
+    });
+
+
+    // 3. Send AI response via Twilio
     const client = twilio(accountSid, authToken);
     await client.messages.create({
-      body: message,
-      from: twilioPhoneNumber, // Use the variable directly
+      body: aiResponse,
+      from: twilioPhoneNumber,
       to: `whatsapp:${fromNumber}`,
     });
 
@@ -66,17 +79,18 @@ export async function askAI(prevState: any, formData: FormData) {
     console.error('Error en la acción askAI:', error);
     let detailedError = 'Hubo un error al procesar tu solicitud.';
 
-    if (
-      error.code === 'auth/network-request-failed' ||
-      error.message.includes('firestore')
-    ) {
+    if (error.code && error.code.includes('firestore')) {
       detailedError =
         'Hubo un error al guardar tu consulta en la base de datos. Por favor, revisa la configuración de Firestore y las reglas de seguridad.';
+    } else if (error.code === 21614) { // Twilio error for "To" number not opted-in for Sandbox
+       detailedError =
+        `El número ${fromNumber} no se ha unido al Sandbox de Twilio. Envía un mensaje de WhatsApp desde tu teléfono al número ${twilioPhoneNumber} para unirte y poder recibir respuestas.`;
     } else if (error.code === 21211) { // Twilio error for invalid 'To' number
       detailedError =
         'El número de WhatsApp proporcionado no es válido. Por favor, verifica e intenta de nuevo.';
+    } else if (error.code === 20003) { // Auth error
+      detailedError = 'Error de autenticación con Twilio. Verifica tu Account SID y Auth Token.';
     } else {
-      // General unexpected error, including the Twilio "From" error
       detailedError = `Ocurrió un error inesperado: ${error.message}`;
     }
 
