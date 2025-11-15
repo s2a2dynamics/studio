@@ -1,27 +1,27 @@
 {
   "entities": {
-    "Contact": {
-      "title": "Contact",
-      "description": "Represents a single contact, identified by their WhatsApp number.",
+    "ContactMessage": {
+      "title": "Contact Message",
+      "description": "Represents a single message submitted by a user via the form.",
       "type": "object",
       "properties": {
         "whatsappNumber": {
           "type": "string",
-          "description": "The user's unique WhatsApp number."
+          "description": "The user's WhatsApp number."
         },
         "message": {
           "type": "string",
-          "description": "The last message content submitted by the user."
+          "description": "The message content submitted by the user."
         },
         "lastMessageAt": {
           "type": "string",
           "format": "date-time",
-          "description": "Timestamp of when the last message was submitted."
+          "description": "Timestamp of when the message was submitted."
         },
         "from": {
           "type": "string",
           "enum": ["user", "ai"],
-          "description": "Indicates the origin of the last message."
+          "description": "Indicates the origin of the message (always 'user' in this collection)."
         }
       },
       "required": ["whatsappNumber", "message", "lastMessageAt", "from"]
@@ -33,11 +33,11 @@
     ]
   },
   "firestore": {
-    "/contacts/{contactId}": {
+    "/contacts/{messageId}": {
       "schema": {
-        "$ref": "#/backend/entities/Contact"
+        "$ref": "#/backend/entities/ContactMessage"
       },
-      "description": "Stores unique contacts who have sent messages."
+      "description": "Stores each message sent from the initial form as a separate document."
     }
   }
 }

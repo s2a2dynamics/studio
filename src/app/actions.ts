@@ -3,11 +3,7 @@
 import {
   addDoc,
   collection,
-  getDocs,
-  query,
   serverTimestamp,
-  updateDoc,
-  where,
 } from 'firebase/firestore';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
@@ -49,29 +45,15 @@ export async function askAI(prevState: any, formData: FormData) {
     const firestore = getFirestoreInstance();
     const contactsRef = collection(firestore, 'contacts');
 
-    // 1. Check if contact exists
-    const q = query(contactsRef, where('whatsappNumber', '==', fromNumber));
-    const querySnapshot = await getDocs(q);
+    // Always create a new document for each message
+    await addDoc(contactsRef, {
+      whatsappNumber: fromNumber,
+      message: message,
+      lastMessageAt: serverTimestamp(),
+      from: 'user',
+    });
 
-    if (querySnapshot.empty) {
-      // 2a. If contact does not exist, create a new one
-      await addDoc(contactsRef, {
-        whatsappNumber: fromNumber,
-        message: message,
-        lastMessageAt: serverTimestamp(),
-        from: 'user',
-      });
-    } else {
-      // 2b. If contact exists, update the existing document
-      const contactDocRef = querySnapshot.docs[0].ref;
-      await updateDoc(contactDocRef, {
-        message: message,
-        lastMessageAt: serverTimestamp(),
-        from: 'user',
-      });
-    }
-
-    // 3. Send message via Twilio
+    // Send message via Twilio
     const client = twilio(accountSid, authToken);
     await client.messages.create({
       body: message,
@@ -89,7 +71,7 @@ export async function askAI(prevState: any, formData: FormData) {
       error.message.includes('firestore')
     ) {
       detailedError =
-        'Hubo un error al guardar tu consulta en la base de datos. Por favor, revisa la configuración de Firestore.';
+        'Hubo un error al guardar tu consulta en la base de datos. Por favor, revisa la configuración de Firestore y las reglas de seguridad.';
     } else if (error.code === 21211) {
       detailedError =
         'El número de WhatsApp proporcionado no es válido. Por favor, verifica e intenta de nuevo.';
