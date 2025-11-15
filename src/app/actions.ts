@@ -21,7 +21,7 @@ function getFirestoreInstance() {
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER; // This will now include "whatsapp:"
 
 export async function askAI(prevState: any, formData: FormData) {
   const message = formData.get('message') as string;
@@ -57,7 +57,7 @@ export async function askAI(prevState: any, formData: FormData) {
     const client = twilio(accountSid, authToken);
     await client.messages.create({
       body: message,
-      from: `whatsapp:${twilioPhoneNumber}`,
+      from: twilioPhoneNumber, // Use the variable directly
       to: `whatsapp:${fromNumber}`,
     });
 
@@ -72,10 +72,11 @@ export async function askAI(prevState: any, formData: FormData) {
     ) {
       detailedError =
         'Hubo un error al guardar tu consulta en la base de datos. Por favor, revisa la configuración de Firestore y las reglas de seguridad.';
-    } else if (error.code === 21211) {
+    } else if (error.code === 21211) { // Twilio error for invalid 'To' number
       detailedError =
         'El número de WhatsApp proporcionado no es válido. Por favor, verifica e intenta de nuevo.';
     } else {
+      // General unexpected error, including the Twilio "From" error
       detailedError = `Ocurrió un error inesperado: ${error.message}`;
     }
 

@@ -5,7 +5,7 @@ import twilio from "twilio";
 // Initialize the Twilio client with credentials from the environment
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER; // This will now include "whatsapp:"
 
 
 export async function POST(req: NextRequest) {
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     // 2. Send the response back to the user using the Twilio client
     await client.messages.create({
       body: aiResponse,
-      from:  `whatsapp:${twilioPhoneNumber}`, // This is your Twilio WhatsApp number
+      from:  twilioPhoneNumber, // Use the variable directly
       to: from,
     });
 
