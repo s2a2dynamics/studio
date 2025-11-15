@@ -48,11 +48,11 @@ function AdminDashboard() {
       <main className="flex-1 p-4 md:p-6">
         <Card>
           <CardHeader>
-            <CardTitle>Consultas Recibidas</CardTitle>
+            <CardTitle>Contactos y Últimas Consultas</CardTitle>
             <CardDescription>
-              Aquí puedes ver todos los mensajes enviados a través del formulario.
+              Aquí puedes ver los contactos y sus mensajes más recientes.
               <Badge variant="outline" className="ml-2">
-                {contacts?.length ?? 0} {contacts?.length === 1 ? 'Consulta' : 'Consultas'}
+                {contacts?.length ?? 0} {contacts?.length === 1 ? 'Contacto' : 'Contactos'}
               </Badge>
             </CardDescription>
           </CardHeader>
@@ -63,7 +63,7 @@ function AdminDashboard() {
                     <TableHeader className="sticky top-0 bg-background">
                       <TableRow>
                         <TableHead className="w-[200px]">Número de WhatsApp</TableHead>
-                        <TableHead>Mensaje del Usuario</TableHead>
+                        <TableHead>Último Mensaje</TableHead>
                         <TableHead className="text-right">Fecha de Envío</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -71,21 +71,21 @@ function AdminDashboard() {
                       {isLoading && (
                         <TableRow>
                           <TableCell colSpan={3} className="h-24 text-center">
-                            Cargando consultas...
+                            Cargando contactos...
                           </TableCell>
                         </TableRow>
                       )}
                       {error && (
                           <TableRow>
                           <TableCell colSpan={3} className="h-24 text-center text-red-500">
-                              Error al cargar las consultas: {error.message}
+                              Error al cargar los contactos: {error.message}
                           </TableCell>
                         </TableRow>
                       )}
                       {!isLoading && !contacts?.length && (
                           <TableRow>
                           <TableCell colSpan={3} className="h-24 text-center">
-                            No hay consultas para mostrar.
+                            No hay contactos para mostrar.
                           </TableCell>
                         </TableRow>
                       )}

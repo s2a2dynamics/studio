@@ -1,6 +1,14 @@
 'use server';
 
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import {
+  addDoc,
+  collection,
+  getDocs,
+  query,
+  serverTimestamp,
+  updateDoc,
+  where,
+} from 'firebase/firestore';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { firebaseConfig } from '@/firebase/config';
@@ -30,21 +38,39 @@ export async function askAI(prevState: any, formData: FormData) {
   }
 
   if (!accountSid || !authToken || !twilioPhoneNumber) {
-    const errorMsg = 'Las credenciales de Twilio no están configuradas correctamente en las variables de entorno.';
+    const errorMsg =
+      'Las credenciales de Twilio no están configuradas correctamente en las variables de entorno.';
     console.error(errorMsg);
     return { sentTo: '', error: errorMsg };
   }
 
   try {
     const firestore = getFirestoreInstance();
-    
-    await addDoc(collection(firestore, 'contacts'), {
-      whatsappNumber: fromNumber,
-      message: message,
-      lastMessageAt: serverTimestamp(),
-      from: 'user',
-    });
+    const contactsRef = collection(firestore, 'contacts');
 
+    // 1. Check if contact exists
+    const q = query(contactsRef, where('whatsappNumber', '==', fromNumber));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      // 2a. If contact does not exist, create a new one
+      await addDoc(contactsRef, {
+        whatsappNumber: fromNumber,
+        message: message,
+        lastMessageAt: serverTimestamp(),
+        from: 'user',
+      });
+    } else {
+      // 2b. If contact exists, update the existing document
+      const contactDocRef = querySnapshot.docs[0].ref;
+      await updateDoc(contactDocRef, {
+        message: message,
+        lastMessageAt: serverTimestamp(),
+        from: 'user',
+      });
+    }
+
+    // 3. Send message via Twilio
     const client = twilio(accountSid, authToken);
     await client.messages.create({
       body: message,
@@ -53,15 +79,19 @@ export async function askAI(prevState: any, formData: FormData) {
     });
 
     return { sentTo: fromNumber, error: null };
-
   } catch (error: any) {
     console.error('Error en la acción askAI:', error);
     let detailedError = 'Hubo un error al procesar tu solicitud.';
 
-    if (error.code === 'auth/network-request-failed' || error.message.includes('firestore')) {
-      detailedError = 'Hubo un error al guardar tu consulta en la base de datos. Por favor, revisa la configuración de Firestore.';
+    if (
+      error.code === 'auth/network-request-failed' ||
+      error.message.includes('firestore')
+    ) {
+      detailedError =
+        'Hubo un error al guardar tu consulta en la base de datos. Por favor, revisa la configuración de Firestore.';
     } else if (error.code === 21211) {
-      detailedError = "El número de WhatsApp proporcionado no es válido. Por favor, verifica e intenta de nuevo.";
+      detailedError =
+        'El número de WhatsApp proporcionado no es válido. Por favor, verifica e intenta de nuevo.';
     } else {
       detailedError = `Ocurrió un error inesperado: ${error.message}`;
     }

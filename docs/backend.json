@@ -2,26 +2,26 @@
   "entities": {
     "Contact": {
       "title": "Contact",
-      "description": "Represents a single message submission from a user.",
+      "description": "Represents a single contact, identified by their WhatsApp number.",
       "type": "object",
       "properties": {
         "whatsappNumber": {
           "type": "string",
-          "description": "The user's WhatsApp number."
+          "description": "The user's unique WhatsApp number."
         },
         "message": {
           "type": "string",
-          "description": "The message content submitted by the user."
+          "description": "The last message content submitted by the user."
         },
         "lastMessageAt": {
           "type": "string",
           "format": "date-time",
-          "description": "Timestamp of when the message was submitted."
+          "description": "Timestamp of when the last message was submitted."
         },
         "from": {
           "type": "string",
           "enum": ["user", "ai"],
-          "description": "Indicates the origin of the message, always 'user' for form submissions."
+          "description": "Indicates the origin of the last message."
         }
       },
       "required": ["whatsappNumber", "message", "lastMessageAt", "from"]
@@ -37,7 +37,7 @@
       "schema": {
         "$ref": "#/backend/entities/Contact"
       },
-      "description": "Stores individual messages sent via the contact form."
+      "description": "Stores unique contacts who have sent messages."
     }
   }
 }
