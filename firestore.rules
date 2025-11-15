@@ -1,12 +1,16 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow server-side actions to read and write to the contacts collection.
-    // This is secure because only your server can trigger these operations.
+    // Allows server-side actions (which run without user authentication)
+    // to perform all necessary operations on the contacts collection.
     match /contacts/{contactId} {
-      allow read, write: if true; // Allows get, list, create, update, delete
+      // Allow reading the collection, creating new contacts, and updating existing ones.
+      allow get, list, create, update: if true;
+      // Deleting still requires admin authentication for safety.
+      allow delete: if request.auth != null;
 
-      // Reading or writing messages still requires admin authentication.
+      // Rules for subcollections, if any, can be defined here.
+      // For now, we keep the original rule for messages.
       match /messages/{messageId} {
         allow create: if true;
         allow read, update, delete: if request.auth != null;
